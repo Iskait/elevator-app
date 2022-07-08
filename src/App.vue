@@ -1,26 +1,36 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="wrapper">
+    <lift-shaft></lift-shaft>
+    <shaft-control></shaft-control>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import liftShaft from '@/components/liftShaft';
+import ShaftControl from '@/components/ShaftControl';
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
+  components: { liftShaft, ShaftControl }
 }
 </script>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
+#app {
+  height: 100vh;
+  background-color: #fefefe;
+  color: #000;
+}
+.wrapper {
+  display: flex;
+  width: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  padding: 10px;
+}
+
+
 </style>
