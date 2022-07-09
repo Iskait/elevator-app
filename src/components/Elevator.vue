@@ -1,6 +1,10 @@
 <template>
   <div
-    :style="{ bottom: `${position}%` }"
+    :style="{ 
+        bottom: `${position}%`,
+        height: (100 / stages) + '%', 
+        transition: `all ${Math.abs(level - currentStage)}s ease-in-out`
+        }"
     :class="{
       elevator: true,
       elevator__done: done,
@@ -21,10 +25,8 @@
 <script>
 import { mapState, mapMutations } from "vuex";
 export default {
-  data() {
-    return {
-      position: +localStorage.getItem("currentStage") * 20 - 20,
-    };
+  props: {
+    position: Number
   },
   computed: {
     ...mapState({
@@ -33,31 +35,25 @@ export default {
       status: (state) => state.elevator.status,
       done: (state) => state.elevator.done,
       currentStage: (state) => state.elevator.currentStage,
+      stages: (state) => state.stages
     }),
   },
   methods: {
     ...mapMutations(["setLevel", "switchStatus"]),
     startElevator() {
-      this.switchStatus({ status: "working" });
-      const id = setInterval(() => {
-        this.position += this.queue[0] < this.currentStage ? -0.4 : 0.4;
-        if (~~this.position === this.queue[0] * 20 - 20) {
-          clearInterval(id);
-          this.position = ~~(this.queue[0] * 20 - 20);
-          this.switchStatus({
-            status: "done",
-            done: true,
-            currentStage: this.queue[0],
-          });
-        }
-      }, 20);
-    },
+      this.switchStatus({status: 'working'});
+      setTimeout(() => {
+      this.switchStatus({status: 'done', done: true, currentStage: this.queue[0]})
+      }, Math.abs(this.level - this.queue[0]) * 1000)
+      
+    }
   },
   watch: {
     queue: {
       handler(current) {
         if (current.length && this.status === "idle") {
           this.startElevator();
+          this.setLevel(current[0]);
         }
       },
       deep: true,
@@ -74,18 +70,16 @@ export default {
     },
   },
   mounted() {
-    this.queue.length ? this.startElevator() : null;
-  },
+    this.queue[0] ? (this.startElevator(), this.setLevel(this.queue[0])) : null
+  }
 };
 </script>
 
 <style lang="scss" scoped>
 .elevator {
   background-color: rgb(5, 204, 204);
-  height: 20%;
   width: 100%;
   position: absolute;
-  bottom: 0%;
   display: flex;
   justify-content: center;
   &__display {

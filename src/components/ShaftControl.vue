@@ -3,7 +3,7 @@
     <div class="shaft-control__manual" v-for="level in stages" :key="level">
       <p class="shaft-control__level">{{ level }}</p>
       <button 
-      @click="setLevel(level)" 
+      @click="setQueue(level)" 
       class="shaft-control__button">
         <span 
         :class="{active: queue.includes(level)}"></span>
@@ -22,7 +22,7 @@ export default {
     })
   },  
   methods: {
-    ...mapMutations(["setLevel"]),
+    ...mapMutations(["setQueue"]),
   },
 };
 </script>
