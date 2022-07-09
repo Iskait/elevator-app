@@ -4,20 +4,16 @@
     class="stages__level" 
     v-for="stage in stages"
     :style="{height: (100 / stages) + '%'}"></div>
-    <elevator :position="(100 / stages) * level - (100 / stages)"></elevator>
   </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
-import Elevator from "./Elevator";
 
 export default {
-  components:  { Elevator } , 
   computed: {
     ...mapState({
       stages: (state) => state.stages,
-      level: (state) => state.level,
     }),
   },
 };

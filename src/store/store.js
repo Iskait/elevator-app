@@ -2,34 +2,61 @@ import { createStore } from "vuex";
 
 export default createStore({
   state: () => ({
-    level: +localStorage.getItem("currentStage") || 1,
-    stages: 4,
-    elevator: {
-      status: "idle",
+    slides: 4,
+    stages: 9,
+    elevators: [
+      {
+      id: 0,
+      free: true,
       done: false,
-      currentStage: +localStorage.getItem("currentStage") || 1,
+      currentStage: 1,
+      level: 1
     },
-    queue: JSON.parse(localStorage.getItem("queue")) || [],
+    {
+      id: 1,
+      free: true,
+      done: false,
+      currentStage: 1,
+      level: 1
+    },
+    {
+      id: 2,
+      free: true,
+      done: false,
+      currentStage: 1,
+      level: 1
+    },
+    {
+      id: 3,
+      free: true,
+      done: false,
+      currentStage: 1,
+      level: 1
+    },
+  ],
+    queue: [],
   }),
   mutations: {
-    setLevel(state, payload) {
-      if (state.level === payload) return;
-      state.level = payload;
-      localStorage.setItem("level", state.level);
-    },
     setQueue(state, payload) {
-      state.queue.push(payload);
-      localStorage.setItem("queue", JSON.stringify(state.queue));
+      !state.queue.includes(payload) && 
+      !state.elevators.every(elevator=>elevator.currentStage === payload) && 
+      (state.queue = state.queue.concat(payload));
     },
-    switchStatus(state, { status, done, currentStage }) {
-      state.elevator.status = status;
-      done !== undefined && (state.elevator.done = done);
-      done === false &&
-        (state.queue.shift(),
-        localStorage.setItem("queue", JSON.stringify(state.queue)));
-      currentStage &&
-        ((state.elevator.currentStage = currentStage),
-        localStorage.setItem("currentStage", currentStage));
+    startElevator(state, {id, level}) {
+      const elevator = state.elevators.find(elevator=>elevator.id === id);
+      elevator.level = level;
+      elevator.free = false;
+      state.queue.shift();
     },
+    stopElevator(state, { id }) {
+      const elevator = state.elevators.find(elevator=>elevator.id === id);
+      elevator.currentStage = elevator.level;
+      elevator.done = true;
+    },
+    readyElevator(state, { id }) {
+      const elevator = state.elevators.find(elevator=>elevator.id === id);
+      elevator.done = false;
+      elevator.free = true;
+    }
   },
 });

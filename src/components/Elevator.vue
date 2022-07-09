@@ -1,23 +1,17 @@
 <template>
-  <div
-    :style="{ 
-        bottom: `${position}%`,
-        height: (100 / stages) + '%', 
-        transition: `all ${Math.abs(level - currentStage)}s ease-in-out`
-        }"
-    :class="{
-      elevator: true,
-      elevator__done: done,
-    }"
-  >
-    <p v-if="status === 'working'" class="elevator__display">
-      {{ queue[0] }}
-      <span
-        class="elevator__arrow"
-        :style="{
-          transform: `rotate(${queue[0] > currentStage ? '0deg' : '180deg'})`,
-        }"
-        >&#x2191;</span>
+  <div :style="{
+    bottom: `${position}%`,
+    height: (100 / stages) + '%',
+    transition: `all ${Math.abs(level - currentStage)}s ease-in-out`
+  }" :class="{
+  elevator: true,
+  elevator__done: done,
+}">
+    <p v-if="!free" class="elevator__display">
+      {{ level }}
+      <span v-if="level !== currentStage" class="elevator__arrow" :style="{
+        transform: `rotate(${level > currentStage ? '0deg' : '180deg'})`,
+      }">&#x2191;</span>
     </p>
   </div>
 </template>
@@ -26,62 +20,50 @@
 import { mapState, mapMutations } from "vuex";
 export default {
   props: {
-    position: Number
+    position: Number,
+    level: Number,
+    currentStage: Number,
+    done: Boolean,
+    free: Boolean,
+    id: Number,
   },
   computed: {
     ...mapState({
-      level: (state) => state.level,
       queue: (state) => state.queue,
-      status: (state) => state.elevator.status,
-      done: (state) => state.elevator.done,
-      currentStage: (state) => state.elevator.currentStage,
-      stages: (state) => state.stages
+      stages: (state) => state.stages,
     }),
   },
   methods: {
-    ...mapMutations(["setLevel", "switchStatus"]),
-    startElevator() {
-      this.switchStatus({status: 'working'});
-      setTimeout(() => {
-      this.switchStatus({status: 'done', done: true, currentStage: this.queue[0]})
-      }, Math.abs(this.level - this.queue[0]) * 1000)
-      
-    }
+    ...mapMutations(['readyElevator', 'startElevator', 'stopElevator'])
   },
   watch: {
-    queue: {
-      handler(current) {
-        if (current.length && this.status === "idle") {
-          this.startElevator();
-          this.setLevel(current[0]);
-        }
-      },
-      deep: true,
+    done(status) {
+      if (status) setTimeout(() => this.readyElevator({ id: this.id }), 3000);
     },
-    status: {
-      handler(current) {
-        if (current === "done") {
-          setTimeout(() => {
-            this.switchStatus({ status: "idle", done: false });
-          }, 3000);
-        }
-      },
-      deep: true,
-    },
+    free(ready) {
+      if (ready && this.queue.length) {
+        const delay = Math.abs(this.queue[0] - this.currentStage)
+        this.startElevator({ id: this.id, level: this.queue[0] });
+        setTimeout(() => {
+          this.stopElevator({ id: this.id });
+        }, delay * 1000);
+      }
+    }
   },
   mounted() {
-    this.queue[0] ? (this.startElevator(), this.setLevel(this.queue[0])) : null
+    //this.queue[0] ? (this.startElevator(), this.setLevel({level: this.queue[0], id: this.id})) : null
   }
 };
 </script>
 
 <style lang="scss" scoped>
 .elevator {
-  background-color: rgb(5, 204, 204);
+  background-color: rgba(5, 45, 204, 0.8);
   width: 100%;
   position: absolute;
   display: flex;
   justify-content: center;
+
   &__display {
     margin-top: 5px;
     height: 20px;
@@ -91,21 +73,26 @@ export default {
     display: flex;
     justify-content: center;
   }
+
   &__arrow {
     margin-left: 5px;
   }
 }
+
 @keyframes flickering {
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.1;
   }
+
   100% {
     opacity: 1;
   }
 }
+
 .elevator__done {
   animation: flickering 1s ease-in 0s 3;
 }
