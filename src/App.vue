@@ -1,15 +1,11 @@
 <template>
   <div class="wrapper">
-    <lift-shaft></lift-shaft>
-    <shaft-control></shaft-control>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import liftShaft from '@/components/liftShaft';
-import ShaftControl from '@/components/ShaftControl';
 export default {
-  components: { liftShaft, ShaftControl }
 }
 </script>
 
@@ -23,6 +19,8 @@ export default {
   height: 100vh;
   background-color: #fefefe;
   color: #000;
+  font-size: 20px;
+  font-weight: 600;
 }
 .wrapper {
   display: flex;
