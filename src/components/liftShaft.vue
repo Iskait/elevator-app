@@ -21,9 +21,9 @@ export default {
   components: { Stages, Elevator },
   computed: {
     ...mapState({
-      stages: (state) => state.stages,
-      slides: (state) => state.slides,
-      elevators: (state) => state.elevators
+      stages: (state) => state.setModule.stages,
+      slides: (state) => state.setModule.slides,
+      elevators: (state) => state.elevatorsModule.elevators
     }),
   },
   methods: {
@@ -40,6 +40,7 @@ export default {
     height: 100%;
     margin: 0 20px;
     position: relative;
+    width: 120px;
   }
 }
 </style>

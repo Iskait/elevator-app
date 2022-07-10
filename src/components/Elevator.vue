@@ -1,17 +1,25 @@
 <template>
-  <div :style="{
-    bottom: `${position}%`,
-    height: (100 / stages) + '%',
-    transition: `all ${Math.abs(level - currentStage)}s ease-in-out`
-  }" :class="{
-  elevator: true,
-  elevator__done: done,
-}">
+  <div
+    :style="{
+      bottom: `${position}%`,
+      height: 100 / stages + '%',
+      transition: `all ${Math.abs(level - currentStage)}s ease-in-out`,
+    }"
+    :class="{
+      elevator: true,
+      elevator__done: done,
+    }"
+  >
     <p v-if="!free" class="elevator__display">
       {{ level }}
-      <span v-if="level !== currentStage" class="elevator__arrow" :style="{
-        transform: `rotate(${level > currentStage ? '0deg' : '180deg'})`,
-      }">&#x2191;</span>
+      <span
+        v-if="level !== currentStage"
+        class="elevator__arrow"
+        :style="{
+          transform: `rotate(${level > currentStage ? '0deg' : '180deg'})`,
+        }"
+        >&#x2191;</span
+      >
     </p>
   </div>
 </template>
@@ -29,29 +37,40 @@ export default {
   },
   computed: {
     ...mapState({
-      queue: (state) => state.queue,
-      stages: (state) => state.stages,
+      queue: (state) => state.elevatorsModule.queue,
+      stages: (state) => state.setModule.stages,
     }),
   },
   methods: {
-    ...mapMutations(['readyElevator', 'startElevator', 'stopElevator'])
+    ...mapMutations(["readyElevator", "startElevator", "stopElevator"]),
+    forceStart() {
+      this.currentStage === this.level && 
+      this.done === this.free && 
+      (this.free = true);
+      if (!this.queue.length) return;
+      const delay = Math.abs(this.queue[0] - this.currentStage);
+      this.startElevator({ id: this.id, level: this.queue[0] });
+      setTimeout(() => {
+        this.stopElevator({ id: this.id });
+      }, delay * 1000);
+    },
   },
   watch: {
     done(status) {
       if (status) setTimeout(() => this.readyElevator({ id: this.id }), 3000);
     },
     free(ready) {
-      if (ready && this.queue.length) {
-        const delay = Math.abs(this.queue[0] - this.currentStage)
-        this.startElevator({ id: this.id, level: this.queue[0] });
-        setTimeout(() => {
-          this.stopElevator({ id: this.id });
-        }, delay * 1000);
+      if (ready) {
+        this.forceStart();
       }
-    }
+    },
   },
   mounted() {
-    //this.queue[0] ? (this.startElevator(), this.setLevel({level: this.queue[0], id: this.id})) : null
+    this.forceStart();
+    this.done && setTimeout(() => this.readyElevator({ id: this.id }), 3000)
+  },
+  updated() {
+
   }
 };
 </script>
