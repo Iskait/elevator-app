@@ -37,13 +37,13 @@ export default {
           const freeElevators = this.elevators.filter(
             (elevator) => elevator.free && elevator.level !== newQueue[0]
           );
-          const elevator = freeElevators.sort(
+          const closestElevator = freeElevators.sort(
             (a, b) =>
               Math.abs(a.currentStage - newQueue[0]) -
               Math.abs(b.currentStage - newQueue[0])
           )[0];
-          if (elevator) {
-            const { id, currentStage } = elevator;
+          if (closestElevator) {
+            const { id, currentStage } = closestElevator;
             const delay = Math.abs(currentStage - newQueue[0]);
             this.startElevator({ id, level: newQueue[0] });
             setTimeout(() => {
