@@ -1,7 +1,10 @@
 <template>
   <div class="stages">
-    <div class="stages__level" v-for="stage in stages"></div>
-    <elevator></elevator>
+    <div 
+    class="stages__level" 
+    v-for="stage in stages"
+    :style="{height: (100 / stages) + '%'}"></div>
+    <elevator :position="(100 / stages) * level - (100 / stages)"></elevator>
   </div>
 </template>
 
@@ -14,6 +17,7 @@ export default {
   computed: {
     ...mapState({
       stages: (state) => state.stages,
+      level: (state) => state.level,
     }),
   },
 };
@@ -26,7 +30,6 @@ export default {
   border: 1px solid black;
   width: 120px;
   &__level {
-    height: 20%;
     border-bottom: 1px solid rgb(73, 72, 72);
   }
 }

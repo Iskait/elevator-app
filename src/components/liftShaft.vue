@@ -26,6 +26,7 @@ export default {
 .lift-shaft {
   &__slide {
     height: 100%;
+    margin: 0 20px;
   }
 }
 </style>
