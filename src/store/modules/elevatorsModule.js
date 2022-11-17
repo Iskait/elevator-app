@@ -6,7 +6,8 @@ export const elevatorsModule = {
   }),
   mutations: {
     setQueue(state, payload) {
-      if(!state.queue.includes(payload) && !state.elevators.every(elevator=>elevator.currentStage === payload)) {
+      if(!state.queue.includes(payload) && 
+        !state.elevators.some(elevator=>elevator.level === payload)) {
         state.queue = state.queue.concat(payload);
         localStorage.setItem('queue', JSON.stringify(state.queue));
         state.performingStages.push(payload);
