@@ -1,12 +1,59 @@
+<script setup lang="ts">
+import { watch } from "vue";
+import { useElevatorsStore } from "../stores/Elevators";
+import { useOptionStore } from "../stores/Option";
+import { storeToRefs } from "pinia";
+
+/** Хранилище `Elevator` */
+const elevatorStore = useElevatorsStore();
+
+/** Хранилище `Option` */
+const optionStore = useOptionStore();
+
+/** Очередь, выполняющийся этаж и лифты */
+const { queue, performingStages, elevators } = storeToRefs(elevatorStore);
+
+/** Добавление в очередь, запуск лифта и остановка */
+const { setQueue, startElevator, stopElevator } = elevatorStore;
+
+/** Количество этажей */
+const { stages } = storeToRefs(optionStore);
+
+watch(
+  () => queue,
+  (newQueue) => {
+    if (newQueue.value.length) {
+      const freeElevators = elevators.value.filter(
+        (elevator) => elevator.free && elevator.level !== newQueue.value[0]
+      );
+      const closestElevator = freeElevators.sort(
+        (a, b) =>
+          Math.abs(a.currentStage - newQueue.value[0]) -
+          Math.abs(b.currentStage - newQueue.value[0])
+      )[0];
+      if (closestElevator) {
+        const { id, currentStage } = closestElevator;
+        const delay = Math.abs(currentStage - newQueue.value[0]);
+        startElevator({ id, level: newQueue.value[0] });
+        setTimeout(() => {
+          stopElevator(id);
+        }, delay * 1000);
+      }
+    }
+  },
+  { deep: true }
+);
+</script>
+
 <template>
   <div class="shaft-control">
     <div class="shaft-control__manual" v-for="stage in stages" :key="stage">
       <p class="shaft-control__level">{{ stage }}</p>
       <button
-        @click="setQueue(stage)"
+        @click="setQueue(+stage)"
         :class="{
           'shaft-control__button': true,
-          active: performingStages.includes(stage),
+          active: performingStages.includes(+stage),
         }"
       >
         <span></span>
@@ -14,48 +61,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import { mapState, mapMutations } from "vuex";
-export default {
-  computed: {
-    ...mapState({
-      stages: (state) => state.setModule.stages,
-      queue: (state) => state.elevatorsModule.queue,
-      performingStages: (state) => state.elevatorsModule.performingStages,
-      elevators: (state) => state.elevatorsModule.elevators,
-    }),
-  },
-  methods: {
-    ...mapMutations(["setQueue", "startElevator", "stopElevator"]),
-  },
-  watch: {
-    queue: {
-      deep: true,
-      handler(newQueue) {
-        if (newQueue.length) {
-          const freeElevators = this.elevators.filter(
-            (elevator) => elevator.free && elevator.level !== newQueue[0]
-          );
-          const closestElevator = freeElevators.sort(
-            (a, b) =>
-              Math.abs(a.currentStage - newQueue[0]) -
-              Math.abs(b.currentStage - newQueue[0])
-          )[0];
-          if (closestElevator) {
-            const { id, currentStage } = closestElevator;
-            const delay = Math.abs(currentStage - newQueue[0]);
-            this.startElevator({ id, level: newQueue[0] });
-            setTimeout(() => {
-              this.stopElevator({ id });
-            }, delay * 1000);
-          }
-        }
-      },
-    },
-  },
-};
-</script>
 
 <style lang="scss" scoped>
 .shaft-control {
