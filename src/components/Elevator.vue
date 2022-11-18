@@ -1,8 +1,57 @@
+<script setup lang="ts">
+import { useElevatorsStore } from "../stores/Elevators";
+import { useOptionStore } from "../stores/Option";
+import { storeToRefs } from "pinia";
+import { onMounted } from "vue";
+
+const props = defineProps<{
+  position: number;
+  level: number;
+  currentStage: number;
+  done: boolean;
+  free: boolean;
+  id: number;
+}>();
+
+/** Хранилище `Elevator` */
+const elevatorStore = useElevatorsStore();
+
+/** Хранилище `Option` */
+const optionStore = useOptionStore();
+
+/** Количесто этажей */
+const { stages } = storeToRefs(optionStore);
+
+/** Очередь */
+const { queue } = storeToRefs(elevatorStore);
+
+/** Функции для контроля лифта */
+const { stopElevator, startElevator, readyElevator } = elevatorStore;
+
+function forceStart() {
+  props.currentStage === props.level &&
+    props.done === props.free &&
+    // eslint-disable-next-line vue/no-mutating-props
+    (props.free = true);
+  if (queue.value.length) return;
+  const delay = Math.abs(queue.value[0] - props.currentStage);
+  startElevator({ id: props.id, level: queue.value[0] });
+  setTimeout(() => {
+    stopElevator(props.id);
+  }, delay * 1000);
+}
+
+onMounted(() => {
+  forceStart();
+  props.done && setTimeout(() => readyElevator(props.id), 3000);
+});
+</script>
+
 <template>
   <div
     :style="{
       bottom: `${position}%`,
-      height: 100 / stages + '%',
+      height: 100 / +stages + '%',
       transition: `all ${Math.abs(level - currentStage)}s ease-in-out`,
     }"
     :class="{
@@ -23,57 +72,6 @@
     </p>
   </div>
 </template>
-
-<script>
-import { mapState, mapMutations } from "vuex";
-export default {
-  props: {
-    position: Number,
-    level: Number,
-    currentStage: Number,
-    done: Boolean,
-    free: Boolean,
-    id: Number,
-  },
-  computed: {
-    ...mapState({
-      queue: (state) => state.elevatorsModule.queue,
-      stages: (state) => state.setModule.stages,
-    }),
-  },
-  methods: {
-    ...mapMutations(["readyElevator", "startElevator", "stopElevator"]),
-    forceStart() {
-      this.currentStage === this.level && 
-      this.done === this.free && 
-      (this.free = true);
-      if (!this.queue.length) return;
-      const delay = Math.abs(this.queue[0] - this.currentStage);
-      this.startElevator({ id: this.id, level: this.queue[0] });
-      setTimeout(() => {
-        this.stopElevator({ id: this.id });
-      }, delay * 1000);
-    },
-  },
-  watch: {
-    done(status) {
-      if (status) setTimeout(() => this.readyElevator({ id: this.id }), 3000);
-    },
-    free(ready) {
-      if (ready) {
-        this.forceStart();
-      }
-    },
-  },
-  mounted() {
-    this.forceStart();
-    this.done && setTimeout(() => this.readyElevator({ id: this.id }), 3000)
-  },
-  updated() {
-
-  }
-};
-</script>
 
 <style lang="scss" scoped>
 .elevator {

@@ -1,13 +1,8 @@
 <template>
   <div class="wrapper">
-    <router-view></router-view>
+    <RouterView />
   </div>
 </template>
-
-<script>
-export default {
-}
-</script>
 
 <style lang="scss">
 * {
@@ -29,6 +24,4 @@ export default {
   overflow: hidden;
   padding: 10px;
 }
-
-
 </style>

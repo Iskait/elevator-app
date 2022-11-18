@@ -1,23 +1,21 @@
+<script setup lang="ts">
+import { storeToRefs } from "pinia";
+import { useOptionStore } from "../stores/Option";
+
+/** Количество этажей */
+const { stages } = storeToRefs(useOptionStore());
+</script>
+
 <template>
   <div class="stages">
-    <div 
-    class="stages__level" 
-    v-for="stage in stages"
-    :style="{height: (100 / stages) + '%'}"></div>
+    <div
+      v-for="stage in stages"
+      :key="+stage"
+      class="stages__level"
+      :style="{ height: 100 / +stages + '%' }"
+    />
   </div>
 </template>
-
-<script>
-import { mapState } from "vuex";
-
-export default {
-  computed: {
-    ...mapState({
-      stages: (state) => state.setModule.stages,
-    }),
-  },
-};
-</script>
 
 <style lang="scss" scoped>
 .stages {

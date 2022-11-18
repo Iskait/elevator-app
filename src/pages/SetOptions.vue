@@ -1,3 +1,38 @@
+<script setup lang="ts">
+import { useElevatorsStore } from "../stores/Elevators";
+import { useOptionStore } from "../stores/Option";
+import { useRouter } from "vue-router";
+
+/** Роутер */
+const router = useRouter();
+
+/** Хранилище `Option` */
+const optionStore = useOptionStore();
+
+/** Установка количества лифтов */
+const { setElevators } = useElevatorsStore();
+
+/** Количетсво этажей */
+
+/** Установка шатх и количества этажей */
+const { setSlides, setStages } = optionStore;
+
+const floors = [...Array(18)].map((_, i) => i + 3);
+const shafts = [...Array(10)].map((_, i) => ++i);
+
+const numberOfShafts = 3;
+
+const numberOfFloors = 1;
+
+function startApp() {
+  localStorage.clear();
+  setStages(numberOfFloors);
+  setSlides(numberOfShafts);
+  setElevators(numberOfShafts);
+  router.push("/mine");
+}
+</script>
+
 <template>
   <div class="set">
     <div class="set__container">
@@ -6,58 +41,34 @@
         <div class="set__options">
           <div class="set__type">
             <p class="set__text">Numbers of floors: {{ numberOfFloors }}</p>
-            <select @change="numberOfFloors = +$event.target.value">
-              <option v-for="floor in floors" :value="floor">
+            <select
+              @change="
+                numberOfFloors = +($event.target as HTMLSelectElement).value
+              "
+            >
+              <option v-for="floor in floors" :value="floor" :key="floor">
                 {{ floor }}
               </option>
             </select>
           </div>
           <div class="set__type">
             <p class="set__text">Numbers of shafts: {{ numberOfShafts }}</p>
-            <select @change="numberOfShafts = +$event.target.value">
-              <option v-for="shaft in shafts" :value="shaft">
+            <select
+              @change="
+                numberOfShafts = +($event.target as HTMLSelectElement).value
+              "
+            >
+              <option v-for="shaft in shafts" :value="shaft" :key="shaft">
                 {{ shaft }}
               </option>
             </select>
           </div>
         </div>
-        <button
-        class="set__btn"
-        @click="startApp" 
-        >Start</button>
+        <button class="set__btn" @click="startApp">Start</button>
       </div>
     </div>
   </div>
 </template>
-
-<script>
-import { mapMutations, mapState } from 'vuex';
-export default {
-  data() {
-    return {
-      floors: [...Array(18)].map((_, i) => i + 3),
-      shafts: [...Array(10)].map((_, i) => ++i),
-      numberOfFloors: 3,
-      numberOfShafts: 1,
-    };
-  },
-  methods: {
-    ...mapMutations(['setSlides', 'setStages', 'setElevators']),
-    startApp() {
-        localStorage.clear();
-        this.setStages(this.numberOfFloors);
-        this.setSlides(this.numberOfShafts);
-        this.setElevators(this.numberOfShafts);
-        this.$router.push('/mine');
-    }
-  },
-  computed: {
-    ...mapState({
-        stages: state=>state.setModule.stages
-    })
-  }
-};
-</script>
 
 <style lang="scss" scoped>
 .set {
